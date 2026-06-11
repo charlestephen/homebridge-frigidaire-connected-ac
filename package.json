@@ -1,18 +1,18 @@
 {
   "displayName": "Frigidaire AC",
-  "name": "homebridge-frigidaire-ac",
+  "name": "homebridge-frigidaire-connected-ac",
   "version": "2.0.0",
   "type": "module",
   "description": "Homebridge plugin to control Frigidaire WiFi (Connected) air conditioners directly from HomeKit.",
   "license": "Apache-2.0",
   "author": "CharleStephen",
-  "homepage": "https://github.com/charlestephen/homebridge-frigidaire-ac#readme",
+  "homepage": "https://github.com/charlestephen/homebridge-frigidaire-connected-ac#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/charlestephen/homebridge-frigidaire-ac.git"
+    "url": "git+https://github.com/charlestephen/homebridge-frigidaire-connected-ac.git"
   },
   "bugs": {
-    "url": "https://github.com/charlestephen/homebridge-frigidaire-ac/issues"
+    "url": "https://github.com/charlestephen/homebridge-frigidaire-connected-ac/issues"
   },
   "keywords": [
     "homebridge-plugin",
@@ -21,6 +21,12 @@
     "homekit"
   ],
   "main": "dist/index.js",
+  "files": [
+    "dist",
+    "config.schema.json",
+    "README.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": "^20.10.0 || ^22.10.0 || ^24.0.0",
     "homebridge": "^1.8.0 || ^2.0.0"

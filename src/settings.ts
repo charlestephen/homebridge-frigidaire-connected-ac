@@ -7,4 +7,4 @@ export const PLATFORM_NAME = 'FrigidaireACPlatform';
 /**
  * Must match the "name" field in package.json.
  */
-export const PLUGIN_NAME = 'homebridge-frigidaire-ac';
+export const PLUGIN_NAME = 'homebridge-frigidaire-connected-ac';

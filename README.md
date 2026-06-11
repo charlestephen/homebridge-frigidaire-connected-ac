@@ -1,4 +1,4 @@
-# homebridge-frigidaire-ac
+# homebridge-frigidaire-connected-ac
 
 A [Homebridge](https://homebridge.io) plugin that controls **Frigidaire WiFi
 (Connected) air conditioners** directly from HomeKit, using your Frigidaire app
@@ -20,7 +20,7 @@ any other runtime package).
 ## Install
 
 ```sh
-npm install -g homebridge-frigidaire-ac
+npm install -g homebridge-frigidaire-connected-ac
 ```
 
 No runtime dependencies — the Frigidaire cloud client is built in.
