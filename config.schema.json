@@ -1,0 +1,62 @@
+{
+  "pluginAlias": "FrigidaireACPlatform",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Control your Frigidaire WiFi (Connected) air conditioners from HomeKit. Sign in with the same account you use in the Frigidaire app.",
+  "footerDisplay": "Each AC is exposed as a HeaterCooler (cooling), a fan with speed and vertical swing, an Eco-mode switch, and a filter-status sensor.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "title": "Frigidaire Account Email",
+        "type": "string",
+        "format": "email",
+        "required": true
+      },
+      "password": {
+        "title": "Frigidaire Account Password",
+        "type": "string",
+        "required": true,
+        "x-schema-form": {
+          "type": "password"
+        }
+      },
+      "countryCode": {
+        "title": "Country Code",
+        "type": "string",
+        "required": false,
+        "default": "US",
+        "description": "ISO country code for your Frigidaire account region (e.g. US, CA)."
+      },
+      "pollingInterval": {
+        "title": "Polling Interval (ms)",
+        "type": "integer",
+        "required": false,
+        "default": 10000,
+        "minimum": 5000,
+        "description": "How often to refresh state from the Frigidaire cloud. Too low may trigger rate limiting."
+      },
+      "cacheRefreshToken": {
+        "title": "Cache Refresh Token",
+        "type": "boolean",
+        "required": false,
+        "default": true,
+        "description": "Cache the auth token next to your Homebridge config to minimize logins."
+      }
+    }
+  },
+  "layout": [
+    "username",
+    "password",
+    {
+      "type": "fieldset",
+      "expandable": true,
+      "title": "Advanced",
+      "items": [
+        "countryCode",
+        "pollingInterval",
+        "cacheRefreshToken"
+      ]
+    }
+  ]
+}

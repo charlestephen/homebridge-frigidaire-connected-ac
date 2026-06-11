@@ -1,0 +1,45 @@
+{
+  "displayName": "Frigidaire AC",
+  "name": "homebridge-frigidaire-ac",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Homebridge plugin to control Frigidaire WiFi (Connected) air conditioners directly from HomeKit.",
+  "license": "Apache-2.0",
+  "author": "CharleStephen",
+  "homepage": "https://github.com/charlestephen/homebridge-frigidaire-ac#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/charlestephen/homebridge-frigidaire-ac.git"
+  },
+  "bugs": {
+    "url": "https://github.com/charlestephen/homebridge-frigidaire-ac/issues"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "frigidaire",
+    "air-conditioner",
+    "homekit"
+  ],
+  "main": "dist/index.js",
+  "engines": {
+    "node": "^20.10.0 || ^22.10.0 || ^24.0.0",
+    "homebridge": "^1.8.0 || ^2.0.0"
+  },
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "lint": "eslint . --max-warnings=0",
+    "prepublishOnly": "npm run lint && npm run build",
+    "watch": "npm run build && npm link && nodemon"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "homebridge": "^2.0.0",
+    "nodemon": "^3.1.0",
+    "rimraf": "^6.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}
