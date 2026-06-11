@@ -39,6 +39,27 @@ function jwtExpiryMs(token: string): number | null {
   }
 }
 
+/** Strip the query string from a URL so any secrets in it never reach logs. */
+function redactUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    u.search = '';
+    return u.toString();
+  } catch {
+    return url.split('?')[0];
+  }
+}
+
+/** Write a sensitive file with owner-only (0600) permissions. */
+function writeSecret(filePath: string, data: string): void {
+  fs.writeFileSync(filePath, data, { mode: 0o600 });
+  try {
+    fs.chmodSync(filePath, 0o600);
+  } catch {
+    // best effort: the create-time mode already covers newly created files
+  }
+}
+
 /**
  * A self-contained client for the Frigidaire / Electrolux OCP cloud API.
  * Replaces the legacy @samthegeek/frigidaire library: native fetch, async/await,
@@ -83,25 +104,28 @@ export class FrigidaireClient {
   // HTTP helper
   // ---------------------------------------------------------------------------
 
-  private async http<T>(url: string, init: RequestInit & { json?: unknown }): Promise<T> {
-    const { json, ...rest } = init;
+  private async http<T>(url: string, init: RequestInit & { json?: unknown; form?: Record<string, string> }): Promise<T> {
+    const { json, form, ...rest } = init;
     const headers = new Headers(rest.headers);
+    let body = rest.body;
     if (json !== undefined) {
       headers.set('Content-Type', 'application/json');
+      body = JSON.stringify(json);
+    } else if (form !== undefined) {
+      headers.set('Content-Type', 'application/x-www-form-urlencoded');
+      body = new URLSearchParams(form).toString();
     }
     if (!headers.has('Accept')) {
       headers.set('Accept', 'application/json');
     }
 
-    const res = await fetch(url, {
-      ...rest,
-      headers,
-      body: json !== undefined ? JSON.stringify(json) : rest.body,
-    });
+    const res = await fetch(url, { ...rest, headers, body });
 
     const text = await res.text();
     if (!res.ok) {
-      throw new Error(`HTTP ${res.status} ${res.statusText} for ${url}: ${text.slice(0, 300)}`);
+      // Never include the query string or response body in the error: they can
+      // carry the password or reflected parameters straight into Homebridge logs.
+      throw new Error(`HTTP ${res.status} ${res.statusText} for ${redactUrl(url)}`);
     }
     return (text ? JSON.parse(text) : undefined) as T;
   }
@@ -160,7 +184,7 @@ export class FrigidaireClient {
 
     if (this.cacheDir) {
       try {
-        fs.writeFileSync(this.connectionInfoPath(), JSON.stringify(region));
+        writeSecret(this.connectionInfoPath(), JSON.stringify(region));
       } catch (err) {
         this.log.debug('Could not cache connection info:', String(err));
       }
@@ -170,14 +194,23 @@ export class FrigidaireClient {
 
   /** Full Gigya login + OAuth token exchange. */
   private async fullLogin(region: RegionalConfig): Promise<void> {
-    const gigyaUrl = `https://accounts.${region.domain}/accounts.login?format=json&httpStatusCodes=false`
-      + `&include=id_token&apikey=${encodeURIComponent(region.apiKey)}`
-      + `&loginID=${encodeURIComponent(this.username)}&password=${encodeURIComponent(this.password)}`;
-
-    const gigya = await this.http<{ id_token?: string; statusCode?: number; errorMessage?: string }>(gigyaUrl, {
-      method: 'GET',
-      headers: { 'User-Agent': 'frigidaireApp/5855 CFNetwork/1335.0.3.1 Darwin/21.6.0' },
-    });
+    // POST the credentials in the body — never in the URL — so the password
+    // cannot leak via logs, proxies, or server access logs.
+    const gigya = await this.http<{ id_token?: string; statusCode?: number; errorMessage?: string }>(
+      `https://accounts.${region.domain}/accounts.login`,
+      {
+        method: 'POST',
+        headers: { 'User-Agent': 'frigidaireApp/5855 CFNetwork/1335.0.3.1 Darwin/21.6.0' },
+        form: {
+          format: 'json',
+          httpStatusCodes: 'false',
+          include: 'id_token',
+          apikey: region.apiKey,
+          loginID: this.username,
+          password: this.password,
+        },
+      },
+    );
     if (!gigya.id_token) {
       throw new Error(`Frigidaire login failed${gigya.errorMessage ? `: ${gigya.errorMessage}` : ''} (check your email/password).`);
     }
@@ -221,7 +254,7 @@ export class FrigidaireClient {
     this.accessTokenExpiry = jwtExpiryMs(accessToken) ?? Date.now() + 30 * 60 * 1000;
     if (this.cacheDir) {
       try {
-        fs.writeFileSync(this.refreshTokenPath(), refreshToken);
+        writeSecret(this.refreshTokenPath(), refreshToken);
       } catch (err) {
         this.log.debug('Could not cache refresh token:', String(err));
       }
